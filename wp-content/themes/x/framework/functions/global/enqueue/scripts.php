@@ -20,9 +20,11 @@
 if ( ! function_exists( 'x_enqueue_site_scripts' ) ) :
   function x_enqueue_site_scripts() {
 
-    wp_register_script( 'x-site-head', X_TEMPLATE_URL . '/framework/js/dist/site/x-head.min.js', array( 'jquery' ), X_VERSION, false );
-    wp_register_script( 'x-site-body', X_TEMPLATE_URL . '/framework/js/dist/site/x-body.min.js', array( 'jquery' ), X_VERSION, true );
-    wp_register_script( 'x-site-icon', X_TEMPLATE_URL . '/framework/js/dist/site/x-icon.min.js', array( 'jquery' ), X_VERSION, true );
+    $ext = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '.js' : '.min.js';
+
+    wp_register_script( 'x-site-head', X_TEMPLATE_URL . "/framework/js/dist/site/x-head$ext", array( 'jquery' ), X_VERSION, false );
+    wp_register_script( 'x-site-body', X_TEMPLATE_URL . "/framework/js/dist/site/x-body$ext", array( 'jquery' ), X_VERSION, true );
+    wp_register_script( 'x-site-icon', X_TEMPLATE_URL . "/framework/js/dist/site/x-icon$ext", array( 'jquery' ), X_VERSION, true );
 
     wp_enqueue_script( 'x-site-head' );
     wp_enqueue_script( 'x-site-body' );
@@ -61,44 +63,22 @@ if ( ! function_exists( 'x_enqueue_post_meta_scripts' ) ) :
       return;
     }
 
+    $ext = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '.js' : '.min.js';
+
     wp_enqueue_script( 'wp-color-picker' );
-    wp_enqueue_script( 'x-confirm-js', X_TEMPLATE_URL . '/framework/js/dist/admin/x-confirm.min.js', array( 'jquery' ), X_VERSION, true );
 
-
-    if ( strpos( $hook, 'x-addons-customizer-manager' ) != false ) {
-      wp_enqueue_script( 'x-customizer-admin-js', X_TEMPLATE_URL . '/framework/js/dist/admin/x-customizer-admin.min.js', array( 'jquery' ), X_VERSION, true );
+    if ( strpos( $hook, 'x-addons' ) !== false ) {
+      wp_register_script( 'x-addons-home-js', X_TEMPLATE_URL . "/framework/js/dist/admin/x-addons-home{$ext}", array( x_tco()->handle( 'admin-js' ) ), X_VERSION, true );
+      wp_localize_script( 'x-addons-home-js', 'xAddonsHome', apply_filters( '_x_addons_home_data', array() ) );
+      wp_enqueue_script( 'x-addons-home-js' );
     }
 
-    // if ( strpos( $hook, 'x-addons-demo-content' ) != false ) {
-
-    //   wp_register_script( 'x-demo-content-admin-js', X_TEMPLATE_URL . '/framework/js/dist/admin/x-demo-content-admin.min.js', array( 'jquery' ), X_VERSION, true );
-
-    //   wp_localize_script( 'x-demo-content-admin-js', 'xDemoContent', array(
-    //     'start'     => __( 'Let&apos;s get started!', '__x__' ),
-    //     'complete'  => __( 'Have fun!', '__x__' ),
-    //     'simulated' => __( 'Working on it...', '__x__' ),
-    //     'confirm'   => __( 'Installing demo content will not alter any of your pages or posts, but it will overwrite your Customizer settings. This is not reversible unless you have previously made a backup of your settings. Are you sure you want to proceed?', '__x__' ),
-    //     'standard'  => array(
-    //       'button'  => __( 'Setup Standard Demo: %s', '__x__' ),
-    //       'timeout' => __( 'Hang in there, we&apos;re almost done...', '__x__' ),
-    //     ),
-    //     'expanded' => array(
-    //       'button'  => __( 'Setup Expanded Demo: %s', '__x__' ),
-    //       'timeout' => __( 'Connection timeout. Retrying... (%s attempts)', '__x__' ),
-    //       'failure' => __( 'We&apos;re sorry, the demo failed to finish importing.', '__x__' ),
-    //     )
-    //   ) );
-
-    //   wp_enqueue_script( 'x-demo-content-admin-js' );
-
-    // }
-
     if ( $hook == 'widgets.php' ) {
-      wp_enqueue_script( 'x-widgets-js', X_TEMPLATE_URL . '/framework/js/dist/admin/x-widgets.min.js', array( 'jquery' ), X_VERSION, true );
+      wp_enqueue_script( 'x-widgets-js', X_TEMPLATE_URL . "/framework/js/dist/admin/x-widgets{$ext}", array( 'jquery' ), X_VERSION, true );
     }
 
     if ( $hook == 'post.php' || $hook == 'post-new.php' || $hook == 'edit-tags.php' ) {
-      wp_enqueue_script( 'x-meta-js', X_TEMPLATE_URL . '/framework/js/dist/admin/x-meta.min.js', array( 'jquery', 'media-upload', 'thickbox' ), X_VERSION, true );
+      wp_enqueue_script( 'x-meta-js', X_TEMPLATE_URL . "/framework/js/dist/admin/x-meta{$ext}", array( 'jquery', 'media-upload', 'thickbox' ), X_VERSION, true );
     }
 
     if ( $hook == 'post.php' || $hook == 'post-new.php' || strpos( $hook, 'x-extensions' ) != false ) {
@@ -121,7 +101,15 @@ endif;
 if ( ! function_exists( 'x_enqueue_customizer_controls_scripts' ) ) :
   function x_enqueue_customizer_controls_scripts() {
 
-    wp_enqueue_script( 'x-customizer-controls-js', X_TEMPLATE_URL . '/framework/js/dist/admin/x-customizer-controls.min.js', array( 'jquery' ), X_VERSION, true );
+    $ext = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '.js' : '.min.js';
+
+    wp_register_script( 'x-customizer-controls-js', X_TEMPLATE_URL . "/framework/js/dist/admin/x-customizer-controls$ext", array( 'jquery' ), X_VERSION, true );
+
+    wp_localize_script( 'x-customizer-controls-js', 'x_customizer_controls_data', array(
+      'x_fonts_data' => x_fonts_data()
+    ) );
+
+    wp_enqueue_script( 'x-customizer-controls-js' );
 
   }
   add_action( 'customize_controls_print_footer_scripts', 'x_enqueue_customizer_controls_scripts' );
@@ -135,11 +123,13 @@ endif;
 if ( ! function_exists( 'x_enqueue_customizer_preview_scripts' ) ) :
   function x_enqueue_customizer_preview_scripts() {
 
-    wp_register_script( 'x-customizer-preview-js', X_TEMPLATE_URL . '/framework/js/dist/admin/x-customizer-preview.min.js', array( 'jquery', 'customize-preview', 'heartbeat' ), X_VERSION, true );
+    $ext = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '.js' : '.min.js';
 
-    wp_localize_script( 'x-customizer-preview-js', 'x_customizer_data', array(
-      'woocommerce_is_active' => X_WOOCOMMERCE_IS_ACTIVE
-    ));
+    wp_register_script( 'x-customizer-preview-js', X_TEMPLATE_URL . "/framework/js/dist/admin/x-customizer-preview$ext", array( 'jquery', 'customize-preview', 'heartbeat' ), X_VERSION, true );
+
+    wp_localize_script( 'x-customizer-preview-js', 'x_customizer_preview_data', array(
+      'x_woocommerce_is_active' => X_WOOCOMMERCE_IS_ACTIVE
+    ) );
 
     wp_enqueue_script( 'x-customizer-preview-js' );
 

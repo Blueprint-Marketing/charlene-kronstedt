@@ -81,23 +81,29 @@ class RevSliderFacebook {
 	/**
 	 * Get Photoset Photos
 	 *
-	 * @since    1.0.0
+	 * @since    5.1.1 
 	 * @param    string    $photo_set_id 	Photoset ID
 	 * @param    int       $item_count 	number of photos to pull
 	 */
 	public function get_photo_set_photos($photo_set_id,$item_count=10,$app_id,$app_secret){
-		$oauth = wp_remote_fopen("https://graph.facebook.com/oauth/access_token?type=client_cred&client_id=".$app_id."&client_secret=".$app_secret);
-		$url = "https://graph.facebook.com/$photo_set_id?fields=photos&".$oauth;
-		
+    $oauth = wp_remote_fopen("https://graph.facebook.com/oauth/access_token?type=client_cred&client_id=".$app_id."&client_secret=".$app_secret);
+    $url = "https://graph.facebook.com/$photo_set_id/photos?fields=photos&".$oauth."&fields=id,from,message,picture,link,name,icon,privacy,type,status_type,object_id,application,created_time,updated_time,is_hidden,is_expired,comments.limit(1).summary(true),likes.limit(1).summary(true)";
+
 		$transient_name = 'revslider_' . md5($url);
 
 		if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
 			return ($data);
 
 		$photo_set_photos = json_decode(wp_remote_fopen($url));
-		if(isset($photo_set_photos->photos->data)){
-			set_transient( $transient_name, $photo_set_photos->photos->data, $this->transient_sec );
-			return $photo_set_photos->photos->data;
+
+    /* 
+    echo '<pre>';
+    print_r($photo_set_photos);
+    echo '</pre>';
+    */
+		if(isset($photo_set_photos->data)){
+			set_transient( $transient_name, $photo_set_photos->data, $this->transient_sec );
+			return $photo_set_photos->data;
 		}
 		else return '';
 	}
@@ -112,12 +118,11 @@ class RevSliderFacebook {
 	public function get_photo_set_photos_options($user_url,$current_album,$app_id,$app_secret,$item_count=99){
 		$user_id = $this->get_user_from_url($user_url);
 		$photo_sets = $this->get_photo_sets($user_id,999,$app_id,$app_secret);
+    if(empty($current_album)) $current_album = "";
 		$return = array();
 		if(is_array($photo_sets)){
 			foreach($photo_sets as $photo_set){
-				if(empty($photo_set->description)) $photo_set->description = "";
-				if(empty($photo_set->count))  $photo_set->count = 0;
-				$return[] = '<option title="'.$photo_set->description.'" '.selected( $photo_set->id , $current_album , false ).' value="'.$photo_set->id.'">'.$photo_set->name.' ('.$photo_set->count.' photos)</option>"';
+				$return[] = '<option title="'.$photo_set->name.'" '.selected( $photo_set->id , $current_album , false ).' value="'.$photo_set->id.'">'.$photo_set->name.'</option>"';
 			}
 		}
 		return $return;
@@ -133,13 +138,14 @@ class RevSliderFacebook {
 	 */
 	public function get_photo_feed($user,$app_id,$app_secret,$item_count=10){
 		$oauth = wp_remote_fopen("https://graph.facebook.com/oauth/access_token?type=client_cred&client_id=".$app_id."&client_secret=".$app_secret);
-		$url = "https://graph.facebook.com/$user/feed?".$oauth;
-		
+		$url = "https://graph.facebook.com/$user/feed?".$oauth."&fields=id,from,message,picture,link,name,icon,privacy,type,status_type,object_id,application,created_time,updated_time,is_hidden,is_expired,comments.limit(1).summary(true),likes.limit(1).summary(true)";
+
 		$transient_name = 'revslider_' . md5($url);
 		if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
 			return ($data);
 
 		$feed = json_decode(wp_remote_fopen($url));
+
 		if(isset($feed->data)){
 			set_transient( $transient_name, $feed->data, $this->transient_sec );
 			return $feed->data;
@@ -520,7 +526,7 @@ class RevSliderInstagram {
 	}
 
 	/**
-	 * Get Instagram Pictures
+	 * Get Instagram Pictures Public by User
 	 *
 	 * @since    1.0.0
 	 * @param    string    $user_id 	Instagram User id (not name)
@@ -529,6 +535,28 @@ class RevSliderInstagram {
 		//call the API and decode the response
 		$url = "https://api.instagram.com/v1/users/".$search_user_id."/media/recent?count=".$count."&access_token=".$this->api_key."&client_id=".$search_user_id;
 		
+		$transient_name = 'revslider_' . md5($url);
+		if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
+			return ($data);
+
+		$rsp = json_decode(wp_remote_fopen($url));
+		if(isset($rsp->data)){
+			set_transient( $transient_name, $rsp->data, $this->transient_sec );
+			return $rsp->data;
+		}
+		else return '';
+	}
+
+	/**
+	 * Get Instagram Pictures Public by Tag
+	 *
+	 * @since    1.0.0
+	 * @param    string    $user_id 	Instagram User id (not name)
+	 */
+	public function get_tag_photos($search_tag,$count){
+		//call the API and decode the response
+		$url = "https://api.instagram.com/v1/tags/".$search_tag."/media/recent?count=".$count."&access_token=".$this->api_key;
+
 		$transient_name = 'revslider_' . md5($url);
 		if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
 			return ($data);
@@ -612,7 +640,9 @@ class RevSliderFlickr {
 		  'format' => 'json',
 		  'nojsoncallback' => 1,
 		);
-		$this->transient_sec = $transient_sec;
+
+    $this->transient_sec = $transient_sec;
+
 	}
 
 	/**
@@ -631,7 +661,7 @@ class RevSliderFlickr {
 		//call the API and decode the response
 		$url = "https://api.flickr.com/services/rest/?".implode('&', $encoded_params);
 		$transient_name = 'revslider_' . md5($url);
-		
+
 		if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
 			return ($data);
 
@@ -708,7 +738,8 @@ class RevSliderFlickr {
 		
 		//get photo list
 		$public_photos_list = $this->call_flickr_api($public_photo_params);
-		if(isset($public_photos_list->photos->photo))
+    //var_dump($public_photos);
+		if(isset($public_photos_list->photos->photo))      
 			return $public_photos_list->photos->photo;
 		else return '';
 	}
@@ -925,7 +956,7 @@ class RevSliderYoutube {
 	 */
 	public function get_playlists(){
 		//call the API and decode the response
-		$url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=".$this->channel_id."&key=".$this->api_key;
+		$url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&maxResults=50&channelId=".$this->channel_id."&key=".$this->api_key;
 		$rsp = json_decode(wp_remote_fopen($url));
 		if(isset($rsp->items)){
 			return $rsp->items;

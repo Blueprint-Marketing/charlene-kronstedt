@@ -111,6 +111,19 @@ add_filter( 'woocommerce_show_page_title', 'x_woocommerce_show_page_title' );
 // =============================================================================
 
 //
+// Title.
+//
+
+function x_woocommerce_template_loop_product_title() {
+  echo '<h3><a href="' . get_the_permalink() . '">' . get_the_title() . '</a></h3>';
+}
+
+add_action( 'woocommerce_shop_loop_item_title', 'x_woocommerce_template_loop_product_title', 10 );
+remove_action( 'woocommerce_shop_loop_item_title', 'woocommerce_template_loop_product_title', 10 );
+
+
+
+//
 // Get shop link.
 //
 
@@ -124,29 +137,18 @@ function x_get_shop_link() {
 
 
 //
-// Remove.
-//
-// 1. Rating.
-// 2. Add to cart button.
-//
-
-remove_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_rating', 5 ); // 1
-remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 ); // 2
-
-
-//
 // Columns and posts per page.
 //
 
 function x_woocommerce_shop_columns() {
-  return x_get_option( 'x_woocommerce_shop_columns', '3' );
+  return x_get_option( 'x_woocommerce_shop_columns' );
 }
 
 add_filter( 'loop_shop_columns', 'x_woocommerce_shop_columns' );
 
 
 function x_woocommerce_shop_posts_per_page() {
-  return x_get_option( 'x_woocommerce_shop_count', '12' );
+  return x_get_option( 'x_woocommerce_shop_count' );
 }
 
 add_filter( 'loop_shop_per_page', 'x_woocommerce_shop_posts_per_page' );
@@ -181,7 +183,7 @@ add_action( 'woocommerce_before_shop_loop_item_title', 'x_woocommerce_shop_produ
 
 
 //
-// Shop wrapper.
+// Shop item wrapper.
 //
 
 function x_woocommerce_before_shop_loop_item() {
@@ -197,7 +199,7 @@ function x_woocommerce_before_shop_loop_item_title() {
 }
 
 function x_woocommerce_after_shop_loop_item_title() {
-  woocommerce_get_template( 'loop/add-to-cart.php' );
+  woocommerce_template_loop_add_to_cart();
   echo '</header></div>';
 }
 
@@ -205,11 +207,16 @@ add_action( 'woocommerce_before_shop_loop_item', 'x_woocommerce_before_shop_loop
 add_action( 'woocommerce_after_shop_loop_item', 'x_woocommerce_after_shop_loop_item', 10 );
 add_action( 'woocommerce_before_shop_loop_item_title', 'x_woocommerce_before_shop_loop_item_title', 10 );
 add_action( 'woocommerce_after_shop_loop_item_title', 'x_woocommerce_after_shop_loop_item_title', 10 );
+remove_action( 'woocommerce_after_shop_loop_item_title', 'woocommerce_template_loop_rating', 5 );
+remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
 
 
 
 // Product
 // =============================================================================
+
+remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_rating', 10 );
+
 
 //
 // Remove sale badge.
@@ -263,15 +270,15 @@ add_action( 'woocommerce_after_single_product', 'x_woocommerce_after_single_prod
 
 function x_woocommerce_add_remove_product_tabs( $tabs ) {
 
-  if ( x_get_option( 'x_woocommerce_product_tab_description_enable', '1' ) == '' ) {
+  if ( x_get_option( 'x_woocommerce_product_tab_description_enable' ) == '' ) {
     unset( $tabs['description'] );
   }
 
-  if ( x_get_option( 'x_woocommerce_product_tab_additional_info_enable', '1' ) == '' ) {
+  if ( x_get_option( 'x_woocommerce_product_tab_additional_info_enable' ) == '' ) {
     unset( $tabs['additional_information'] );
   }
 
-  if ( x_get_option( 'x_woocommerce_product_tab_reviews_enable', '1' ) == '' ) {
+  if ( x_get_option( 'x_woocommerce_product_tab_reviews_enable' ) == '' ) {
     unset( $tabs['reviews'] );
   }
 
@@ -316,14 +323,39 @@ function x_woocommerce_cart_no_shipping_available_html() {
 add_filter( 'woocommerce_cart_no_shipping_available_html', 'x_woocommerce_cart_no_shipping_available_html' );
 
 
+//
+// Cart actions.
+//
+
+function x_woocommerce_cart_actions() {
+
+  $output = '';
+
+
+  //
+  // Check based off of wc_coupons_enabled(), which is only available in
+  // WooCommerce v2.5+.
+  //
+
+  if ( apply_filters( 'woocommerce_coupons_enabled', 'yes' === get_option( 'woocommerce_enable_coupons' ) ) ) {
+    $output .= '<input type="submit" class="button" name="apply_coupon" value="' . esc_attr__( 'Apply Coupon', '__x__' ) . '">';
+  }
+
+  echo $output;
+
+}
+
+add_action( 'woocommerce_cart_actions', 'x_woocommerce_cart_actions' );
+
+
 
 // Related Products
 // =============================================================================
 
 function x_woocommerce_output_related_products() {
 
-  $count   = x_get_option( 'x_woocommerce_product_related_count', '4' );
-  $columns = x_get_option( 'x_woocommerce_product_related_columns', '4' );
+  $count   = x_get_option( 'x_woocommerce_product_related_count' );
+  $columns = x_get_option( 'x_woocommerce_product_related_columns' );
 
   $args = array(
     'posts_per_page' => $count,
@@ -346,8 +378,8 @@ add_action( 'woocommerce_after_single_product_summary', 'x_woocommerce_output_re
 
 function x_woocommerce_output_upsells() {
 
-  $count   = x_get_option( 'x_woocommerce_product_upsell_count', '4' );
-  $columns = x_get_option( 'x_woocommerce_product_upsell_columns', '4' );
+  $count   = x_get_option( 'x_woocommerce_product_upsell_count' );
+  $columns = x_get_option( 'x_woocommerce_product_upsell_columns' );
 
   woocommerce_upsell_display( $count, $columns, 'rand' );
 
@@ -369,14 +401,14 @@ add_action( 'woocommerce_after_single_product_summary', 'x_woocommerce_output_up
 if ( ! function_exists( 'x_woocommerce_navbar_cart' ) ) :
   function x_woocommerce_navbar_cart() {
 
-    $cart_info   = x_get_option( 'x_woocommerce_header_cart_info', 'outer-inner' );
-    $cart_layout = x_get_option( 'x_woocommerce_header_cart_layout', 'inline' );
-    $cart_style  = x_get_option( 'x_woocommerce_header_cart_style', 'square' );
-    $cart_outer  = x_get_option( 'x_woocommerce_header_cart_content_outer', 'total' );
-    $cart_inner  = x_get_option( 'x_woocommerce_header_cart_content_inner', 'count' );
+    $cart_info   = x_get_option( 'x_woocommerce_header_cart_info' );
+    $cart_layout = x_get_option( 'x_woocommerce_header_cart_layout' );
+    $cart_style  = x_get_option( 'x_woocommerce_header_cart_style' );
+    $cart_outer  = x_get_option( 'x_woocommerce_header_cart_content_outer' );
+    $cart_inner  = x_get_option( 'x_woocommerce_header_cart_content_inner' );
 
     $data = array(
-      'icon'  => '<i class="x-icon-shopping-cart" data-x-icon="&#xf07a;"></i>',
+      'icon'  => '<i class="x-icon-shopping-cart" data-x-icon="&#xf07a;" aria-hidden="true"></i>',
       'total' => WC()->cart->get_cart_total(),
       'count' => sprintf( _n( '%d Item', '%d Items', WC()->cart->cart_contents_count, '__x__' ), WC()->cart->cart_contents_count )
     );
@@ -424,7 +456,7 @@ endif;
 if ( ! function_exists( 'x_woocommerce_navbar_menu_item' ) ) :
   function x_woocommerce_navbar_menu_item( $items, $args ) {
 
-    if ( X_WOOCOMMERCE_IS_ACTIVE && x_get_option( 'x_woocommerce_header_menu_enable', '' ) == '1' ) {
+    if ( X_WOOCOMMERCE_IS_ACTIVE && x_get_option( 'x_woocommerce_header_menu_enable' ) == '1' ) {
       if ( $args->theme_location == 'primary' ) {
         $items .= '<li class="menu-item current-menu-parent x-menu-item x-menu-item-woocommerce">'
                   . '<a href="' . x_get_cart_link() . '" class="x-btn-navbar-woocommerce">'
@@ -451,10 +483,10 @@ if ( ! function_exists( 'x_woocommerce_navbar_cart_ajax_notification' ) ) :
     if ( x_is_product_index() && get_option( 'woocommerce_enable_ajax_add_to_cart' ) == 'yes' ) {
       $notification = '<div class="x-cart-notification">'
                       . '<div class="x-cart-notification-icon loading">'
-                        . '<i class="x-icon-cart-arrow-down" data-x-icon="&#xf218;"></i>'
+                        . '<i class="x-icon-cart-arrow-down" data-x-icon="&#xf218;" aria-hidden="true"></i>'
                       . '</div>'
                       . '<div class="x-cart-notification-icon added">'
-                        . '<i class="x-icon-check" data-x-icon="&#xf00c;"></i>'
+                        . '<i class="x-icon-check" data-x-icon="&#xf00c;" aria-hidden="true"></i>'
                       . '</div>'
                     . '</div>';
     } else {

@@ -52,6 +52,9 @@ h6 a:hover,
 .x-comment-time:hover,
 .p-meta > span > a:hover,
 .format-link .link a:hover,
+.x-main .widget ul li a:hover,
+.x-main .widget ol li a:hover,
+.x-main .widget_tag_cloud .tagcloud a:hover,
 .x-sidebar .widget ul li a:hover,
 .x-sidebar .widget ol li a:hover,
 .x-sidebar .widget_tag_cloud .tagcloud a:hover,
@@ -67,12 +70,8 @@ a:hover {
 
   .woocommerce .price > .amount,
   .woocommerce .price > ins > .amount,
-  .woocommerce-page .price > .amount,
-  .woocommerce-page .price > ins > .amount,
   .woocommerce .star-rating:before,
-  .woocommerce-page .star-rating:before,
-  .woocommerce .star-rating span:before,
-  .woocommerce-page .star-rating span:before {
+  .woocommerce .star-rating span:before {
     color: <?php echo $x_site_link_color; ?>;
   }
 
@@ -95,7 +94,6 @@ a.x-img-thumbnail:hover {
 <?php if ( X_WOOCOMMERCE_IS_ACTIVE ) : ?>
 
   .woocommerce .onsale,
-  .woocommerce-page .onsale,
   .widget_price_filter .ui-slider .ui-slider-range {
     background-color: <?php echo $x_site_link_color; ?>;
   }
@@ -123,6 +121,10 @@ a.x-img-thumbnail:hover {
 /*
 // Main content background.
 */
+
+.x-post-slider-archive-active .x-container.main:before {
+  top: 0;
+}
 
 .x-content-sidebar-active .x-container.main:before {
   right: <?php echo 100 - $x_layout_content_width . '%'; ?>;
@@ -310,6 +312,13 @@ foreach ( $items as $item ) {
 */
 
 .h-landmark,
+.x-main .h-widget,
+.x-main .h-widget a.rsswidget,
+.x-main .h-widget a.rsswidget:hover,
+.x-main .widget.widget_pages .current_page_item a,
+.x-main .widget.widget_nav_menu .current-menu-item a,
+.x-main .widget.widget_pages .current_page_item a:hover,
+.x-main .widget.widget_nav_menu .current-menu-item a:hover,
 .x-sidebar .h-widget,
 .x-sidebar .h-widget a.rsswidget,
 .x-sidebar .h-widget a.rsswidget:hover,
@@ -320,6 +329,19 @@ foreach ( $items as $item ) {
   color: <?php echo $x_ethos_sidebar_widget_headings_color; ?>;
 }
 
+.x-main .widget,
+.x-main .widget a,
+.x-main .widget ul li a,
+.x-main .widget ol li a,
+.x-main .widget_tag_cloud .tagcloud a,
+.x-main .widget_product_tag_cloud .tagcloud a,
+.x-main .widget a:hover,
+.x-main .widget ul li a:hover,
+.x-main .widget ol li a:hover,
+.x-main .widget_tag_cloud .tagcloud a:hover,
+.x-main .widget_product_tag_cloud .tagcloud a:hover,
+.x-main .widget_shopping_cart .buttons .button,
+.x-main .widget_price_filter .price_slider_amount .button,
 .x-sidebar .widget,
 .x-sidebar .widget a,
 .x-sidebar .widget ul li a,
@@ -341,6 +363,9 @@ foreach ( $items as $item ) {
 // Border color.
 */
 
+.x-main .h-widget,
+.x-main .widget.widget_pages .current_page_item,
+.x-main .widget.widget_nav_menu .current-menu-item,
 .x-sidebar .h-widget,
 .x-sidebar .widget.widget_pages .current_page_item,
 .x-sidebar .widget.widget_nav_menu .current-menu-item {
@@ -391,68 +416,46 @@ foreach ( $items as $item ) {
 // ========================================================================== */
 
 /*
-// Brand.
-*/
-
-<?php if ( $x_logo_font_color_enable == '1' ) : ?>
-
-  .x-brand,
-  .x-brand:hover {
-    color: <?php echo $x_logo_font_color; ?>;
-  }
-
-<?php endif; ?>
-
-
-/*
 // Body.
 */
 
-<?php if ( $x_body_font_color_enable == '1' ) : ?>
-
-  .format-link .link a,
-  .x-portfolio .entry-extra .x-ul-tags li a {
-    color: <?php echo $x_body_font_color; ?>;
-  }
-
-<?php endif; ?>
+.format-link .link a,
+.x-portfolio .entry-extra .x-ul-tags li a {
+  color: <?php echo $x_body_font_color; ?>;
+}
 
 
 /*
 // Headings.
 */
 
-<?php if ( $x_headings_font_color_enable == '1' ) : ?>
+.p-meta > span > a,
+.x-nav-articles a,
+.entry-top-navigation .entry-parent,
+.option-set .x-index-filters,
+.option-set .x-portfolio-filters,
+.option-set .x-index-filters-menu >li >a:hover,
+.option-set .x-index-filters-menu >li >a.selected,
+.option-set .x-portfolio-filters-menu > li > a:hover,
+.option-set .x-portfolio-filters-menu > li > a.selected {
+  color: <?php echo $x_headings_font_color; ?>;
+}
 
-  .p-meta > span > a,
-  .x-nav-articles a,
-  .entry-top-navigation .entry-parent,
-  .option-set .x-index-filters,
-  .option-set .x-portfolio-filters,
-  .option-set .x-index-filters-menu >li >a:hover,
-  .option-set .x-index-filters-menu >li >a.selected,
-  .option-set .x-portfolio-filters-menu > li > a:hover,
-  .option-set .x-portfolio-filters-menu > li > a.selected {
-    color: <?php echo $x_headings_font_color; ?>;
-  }
+.x-nav-articles a,
+.entry-top-navigation .entry-parent,
+.option-set .x-index-filters,
+.option-set .x-portfolio-filters,
+.option-set .x-index-filters i,
+.option-set .x-portfolio-filters i {
+  border-color: <?php echo $x_headings_font_color; ?>;
+}
 
-  .x-nav-articles a,
-  .entry-top-navigation .entry-parent,
-  .option-set .x-index-filters,
-  .option-set .x-portfolio-filters,
-  .option-set .x-index-filters i,
-  .option-set .x-portfolio-filters i {
-    border-color: <?php echo $x_headings_font_color; ?>;
-  }
-
-  .x-nav-articles a:hover,
-  .entry-top-navigation .entry-parent:hover,
-  .option-set .x-index-filters:hover i,
-  .option-set .x-portfolio-filters:hover i {
-    background-color: <?php echo $x_headings_font_color; ?>;
-  }
-
-<?php endif; ?>
+.x-nav-articles a:hover,
+.entry-top-navigation .entry-parent:hover,
+.option-set .x-index-filters:hover i,
+.option-set .x-portfolio-filters:hover i {
+  background-color: <?php echo $x_headings_font_color; ?>;
+}
 
 
 
@@ -469,65 +472,49 @@ foreach ( $items as $item ) {
 
   <?php endif; ?>
 
-  <?php if ( $x_navbar_positioning == 'fixed-top' && $x_layout_site == 'boxed' ) : ?>
-
-    .x-navbar.x-navbar-fixed-top.x-container.max.width {
-      left: 0;
-      right: 0;
-      width: 100%;
-    }
-
-  <?php endif; ?>
-
-  <?php if ( $x_navbar_positioning == 'fixed-left' || $x_navbar_positioning == 'fixed-right' ) : ?>
-
-    .x-navbar .x-navbar-inner > .x-container.width {
-      width: <?php echo $x_layout_site_width . '%'; ?>;
-    }
-
-  <?php endif; ?>
-
-  .x-widgetbar {
-    left: 0;
-    right: 0;
-  }
-
   .x-content-sidebar-active .x-container.main:before,
   .x-sidebar-content-active .x-container.main:before {
     left: -5000em;
   }
 
-  <?php if ( $x_body_font_color_enable == '1' ) : ?>
+  body .x-main .widget,
+  body .x-main .widget a,
+  body .x-main .widget a:hover,
+  body .x-main .widget ul li a,
+  body .x-main .widget ol li a,
+  body .x-main .widget ul li a:hover,
+  body .x-main .widget ol li a:hover,
+  body .x-sidebar .widget,
+  body .x-sidebar .widget a,
+  body .x-sidebar .widget a:hover,
+  body .x-sidebar .widget ul li a,
+  body .x-sidebar .widget ol li a,
+  body .x-sidebar .widget ul li a:hover,
+  body .x-sidebar .widget ol li a:hover {
+    color: <?php echo $x_body_font_color; ?>;
+  }
 
-    body .x-sidebar .widget,
-    body .x-sidebar .widget a,
-    body .x-sidebar .widget a:hover,
-    body .x-sidebar .widget ul li a,
-    body .x-sidebar .widget ol li a,
-    body .x-sidebar .widget ul li a:hover,
-    body .x-sidebar .widget ol li a:hover {
-      color: <?php echo $x_body_font_color; ?>;
-    }
+  body .x-main .h-widget,
+  body .x-main .widget.widget_pages .current_page_item a,
+  body .x-main .widget.widget_nav_menu .current-menu-item a,
+  body .x-main .widget.widget_pages .current_page_item a:hover,
+  body .x-main .widget.widget_nav_menu .current-menu-item a:hover,
+  body .x-sidebar .h-widget,
+  body .x-sidebar .widget.widget_pages .current_page_item a,
+  body .x-sidebar .widget.widget_nav_menu .current-menu-item a,
+  body .x-sidebar .widget.widget_pages .current_page_item a:hover,
+  body .x-sidebar .widget.widget_nav_menu .current-menu-item a:hover {
+    color: <?php echo $x_headings_font_color; ?>;
+  }
 
-  <?php endif; ?>
-
-  <?php if ( $x_headings_font_color_enable == '1' ) : ?>
-
-    body .x-sidebar .h-widget,
-    body .x-sidebar .widget.widget_pages .current_page_item a,
-    body .x-sidebar .widget.widget_nav_menu .current-menu-item a,
-    body .x-sidebar .widget.widget_pages .current_page_item a:hover,
-    body .x-sidebar .widget.widget_nav_menu .current-menu-item a:hover {
-      color: <?php echo $x_headings_font_color; ?>;
-    }
-
-    body .x-sidebar .h-widget,
-    body .x-sidebar .widget.widget_pages .current_page_item,
-    body .x-sidebar .widget.widget_nav_menu .current-menu-item {
-      border-color: <?php echo $x_headings_font_color; ?>;
-    }
-
-  <?php endif; ?>
+  body .x-main .h-widget,
+  body .x-main .widget.widget_pages .current_page_item,
+  body .x-main .widget.widget_nav_menu .current-menu-item,
+  body .x-sidebar .h-widget,
+  body .x-sidebar .widget.widget_pages .current_page_item,
+  body .x-sidebar .widget.widget_nav_menu .current-menu-item {
+    border-color: <?php echo $x_headings_font_color; ?>;
+  }
 
 }
 

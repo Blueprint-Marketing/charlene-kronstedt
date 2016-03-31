@@ -74,14 +74,9 @@ a:hover,
 
   .woocommerce .price > .amount,
   .woocommerce .price > ins > .amount,
-  .woocommerce-page .price > .amount,
-  .woocommerce-page .price > ins > .amount,
   .woocommerce li.product .entry-header h3 a:hover,
-  .woocommerce-page li.product .entry-header h3 a:hover,
   .woocommerce .star-rating:before,
-  .woocommerce-page .star-rating:before,
-  .woocommerce .star-rating span:before,
-  .woocommerce-page .star-rating span:before {
+  .woocommerce .star-rating span:before {
     color: <?php echo $x_site_link_color; ?>;
   }
 
@@ -99,9 +94,8 @@ li.bypostauthor > article.comment {
 
 <?php if ( X_WOOCOMMERCE_IS_ACTIVE ) : ?>
 
-  .woocommerce div.product .woocommerce-tabs .x-comments-area li.comment.bypostauthor .x-comment-header .star-rating-container,
-  .woocommerce-page div.product .woocommerce-tabs .x-comments-area li.comment.bypostauthor .x-comment-header .star-rating-container {
-    border-color: <?php echo $x_site_link_color; ?>;
+  .woocommerce li.comment.bypostauthor .star-rating-container {
+    border-color: <?php echo $x_site_link_color; ?> !important;
   }
 
 <?php endif; ?>
@@ -118,7 +112,7 @@ li.bypostauthor > article.comment {
 .x-skill-bar .bar,
 .x-pricing-column.featured h2,
 .h-comments-title small,
-.pagination a:hover,
+.x-pagination a:hover,
 .x-entry-share .x-share:hover,
 .entry-thumb,
 .widget_tag_cloud .tagcloud a:hover,
@@ -136,10 +130,8 @@ li.bypostauthor > article.comment {
 <?php if ( X_WOOCOMMERCE_IS_ACTIVE ) : ?>
 
   .woocommerce .onsale,
-  .woocommerce-page .onsale,
   .widget_price_filter .ui-slider .ui-slider-range,
-  .woocommerce div.product .woocommerce-tabs .x-comments-area li.comment.bypostauthor article.comment:before,
-  .woocommerce-page div.product .woocommerce-tabs .x-comments-area li.comment.bypostauthor article.comment:before {
+  .woocommerce #comments li.comment.bypostauthor article.comment:before {
     background-color: <?php echo $x_site_link_color; ?>;
   }
 
@@ -199,8 +191,6 @@ li.bypostauthor > article.comment {
 // Color.
 */
 
-.x-brand,
-.x-brand:hover,
 .x-navbar .desktop .x-nav > li > a,
 .x-navbar .desktop .sub-menu li > a,
 .x-navbar .mobile .x-nav li a {
@@ -347,43 +337,22 @@ li.bypostauthor > article.comment {
 // ========================================================================== */
 
 /*
-// Brand.
-*/
-
-<?php if ( $x_logo_font_color_enable == '1' ) : ?>
-
-  .x-brand,
-  .x-brand:hover {
-    color: <?php echo $x_logo_font_color; ?>;
-  }
-
-<?php endif; ?>
-
-
-/*
 // Body.
 */
 
-<?php if ( $x_body_font_color_enable == '1' ) : ?>
+.x-comment-author a {
+  color: <?php echo $x_body_font_color; ?>;
+}
 
-  .x-comment-author a {
+<?php if ( X_WOOCOMMERCE_IS_ACTIVE ) : ?>
+
+  .woocommerce .price > .from,
+  .woocommerce .price > del,
+  .woocommerce p.stars span a:after,
+  .widget_price_filter .price_slider_amount .button,
+  .widget_shopping_cart .buttons .button {
     color: <?php echo $x_body_font_color; ?>;
   }
-
-  <?php if ( X_WOOCOMMERCE_IS_ACTIVE ) : ?>
-
-    .woocommerce .price > .from,
-    .woocommerce .price > del,
-    .woocommerce p.stars span a:after,
-    .woocommerce-page .price > .from,
-    .woocommerce-page .price > del,
-    .woocommerce-page p.stars span a:after,
-    .widget_price_filter .price_slider_amount .button,
-    .widget_shopping_cart .buttons .button {
-      color: <?php echo $x_body_font_color; ?>;
-    }
-
-  <?php endif; ?>
 
 <?php endif; ?>
 
@@ -392,36 +361,32 @@ li.bypostauthor > article.comment {
 // Headings.
 */
 
-<?php if ( $x_headings_font_color_enable == '1' ) : ?>
+.x-comment-author a,
+.comment-form-author label,
+.comment-form-email label,
+.comment-form-url label,
+.comment-form-rating label,
+.comment-form-comment label,
+.widget_calendar #wp-calendar caption,
+.widget_calendar #wp-calendar th,
+.x-accordion-heading .x-accordion-toggle,
+.x-nav-tabs > li > a:hover,
+.x-nav-tabs > .active > a,
+.x-nav-tabs > .active > a:hover {
+  color: <?php echo $x_headings_font_color; ?>;
+}
 
-  .x-comment-author a,
-  .comment-form-author label,
-  .comment-form-email label,
-  .comment-form-url label,
-  .comment-form-rating label,
-  .comment-form-comment label,
-  .widget_calendar #wp-calendar caption,
-  .widget_calendar #wp-calendar th,
-  .x-accordion-heading .x-accordion-toggle,
-  .x-nav-tabs > li > a:hover,
-  .x-nav-tabs > .active > a,
-  .x-nav-tabs > .active > a:hover {
-    color: <?php echo $x_headings_font_color; ?>;
-  }
+.widget_calendar #wp-calendar th {
+  border-bottom-color: <?php echo $x_headings_font_color; ?>;
+}
 
-  .widget_calendar #wp-calendar th {
-    border-bottom-color: <?php echo $x_headings_font_color; ?>;
-  }
-
-  .pagination span.current,
-  .x-portfolio-filters-menu,
-  .widget_tag_cloud .tagcloud a,
-  .h-feature-headline span i,
-  .widget_price_filter .ui-slider .ui-slider-handle {
-    background-color: <?php echo $x_headings_font_color; ?>;
-  }
-
-<?php endif; ?>
+.x-pagination span.current,
+.x-portfolio-filters-menu,
+.widget_tag_cloud .tagcloud a,
+.h-feature-headline span i,
+.widget_price_filter .ui-slider .ui-slider-handle {
+  background-color: <?php echo $x_headings_font_color; ?>;
+}
 
 
 
@@ -430,28 +395,8 @@ li.bypostauthor > article.comment {
 
 @media (max-width: 979px) {
 
-  <?php if ( $x_navbar_positioning == 'fixed-top' && $x_layout_site == 'boxed' ) : ?>
 
-    .x-navbar.x-navbar-fixed-top.x-container.max.width {
-      left: 0;
-      right: 0;
-      width: 100%;
-    }
 
-  <?php endif; ?>
-
-  <?php if ( $x_navbar_positioning == 'fixed-left' || $x_navbar_positioning == 'fixed-right' ) : ?>
-
-    .x-navbar .x-navbar-inner > .x-container.width {
-      width: <?php echo $x_layout_site_width . '%'; ?>;
-    }
-
-  <?php endif; ?>
-
-  .x-widgetbar {
-    left: 0;
-    right: 0;
-  }
 }
 
 

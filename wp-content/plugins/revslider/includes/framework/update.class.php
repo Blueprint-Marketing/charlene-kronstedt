@@ -37,7 +37,7 @@ class RevSliderUpdate {
 	
 		$this->_check_updates();
 
-		if(!isset($transient->response)) {
+		if(isset($transient) && !isset($transient->response)) {
 			$transient->response = array();
 		}
 
@@ -119,16 +119,12 @@ class RevSliderUpdate {
 		$data = new stdClass;
 
 		// Build request
-		$api_key = get_option('revslider-api-key', '');
-		$username = get_option('revslider-username', '');
 		$code = get_option('revslider-code', '');
 		
 		$validated = get_option('revslider-valid', 'false');
 		$stable_version = get_option('revslider-stable-version', '4.2');
 		
 		$rattr = array(
-			'api' => urlencode($api_key),
-			'username' => urlencode($username),
 			'code' => urlencode($code),
 			'version' => urlencode(RevSliderGlobals::SLIDER_REVISION)
 		);
@@ -173,11 +169,14 @@ class RevSliderUpdate {
 			
 			update_option('revslider-update-check-short', time());
 			
+			$purchase = (get_option('revslider-valid', 'false') == 'true') ? get_option('revslider-code', '') : '';
+			
 			$response = wp_remote_post($this->remote_url, array(
 				'user-agent' => 'WordPress/'.$wp_version.'; '.get_bloginfo('url'),
 				'body' => array(
 					'item' => urlencode('revslider'),
-					'version' => urlencode(RevSliderGlobals::SLIDER_REVISION)
+					'version' => urlencode(RevSliderGlobals::SLIDER_REVISION),
+					'code' => urlencode($purchase)
 				)
 			));
 			
@@ -185,7 +184,10 @@ class RevSliderUpdate {
 			$version_info = wp_remote_retrieve_body( $response );
 			
 			if ( $response_code != 200 || is_wp_error( $version_info ) ) {
+				update_option('revslider-connection', false);
 				return false;
+			}else{
+				update_option('revslider-connection', true);
 			}
 			
 			$version_info = json_decode($version_info);
@@ -199,6 +201,22 @@ class RevSliderUpdate {
 			
 			if(isset($version_info->notices)){
 				update_option('revslider-notices', $version_info->notices);
+			}
+			
+			if(isset($version_info->dashboard)){
+				update_option('revslider-dashboard', $version_info->dashboard);
+			}
+
+			if(isset($version_info->addons)){
+				update_option('revslider-addons', $version_info->addons);
+			}
+			
+			if(isset($version_info->deactivated) && $version_info->deactivated === true){
+				if(get_option('revslider-valid', 'false') == 'true'){
+					//remove validation, add notice
+					update_option('revslider-valid', 'false');
+					update_option('revslider-deact-notice', true);
+				}
 			}
 			
 		}
