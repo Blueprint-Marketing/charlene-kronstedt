@@ -12,6 +12,29 @@
  * @return true
  */
 function _pantheon_session_open() {
+	// We use !empty() in the following check to ensure that blank session IDs are not valid.
+	if ( ! empty( $_COOKIE[ session_name() ] ) || ( is_ssl() && ! empty( $_COOKIE[ substr(session_name(), 1) ] ) ) ) {
+		// If a session cookie exists, initialize the session. Otherwise the
+		// session is only started on demand in _pantheon_session_write(), making
+		// anonymous users not use a session cookie unless something is stored in
+		// $_SESSION. This allows HTTP proxies to cache anonymous pageviews.
+		if ( get_current_user_id() || ! empty( $_SESSION ) ) {
+			nocache_headers();
+		}
+	} else {
+		// Set a session identifier for this request. This is necessary because
+		// we lazily start sessions at the end of this request
+		require_once( ABSPATH . 'wp-includes/class-phpass.php');
+		$hasher = new PasswordHash( 8, false );
+		session_id( md5( $hasher->get_random_bytes( 32 ) ) );
+		if ( is_ssl() ) {
+			$insecure_session_name = substr( session_name(), 1 );
+			$insecure_session_id = md5( $hasher->get_random_bytes( 32 ) );
+			//set custom expire time during cookie session creation
+			$lifetime = (int) apply_filters( 'pantheon_session_expiration', 0 );
+			setcookie( $insecure_session_name, $insecure_session_id, $_SERVER['REQUEST_TIME'] + $lifetime);
+		}
+	}
 	return true;
 }
 
@@ -81,7 +104,8 @@ function _pantheon_session_write( $sid, $value ) {
 	}
 
 	$session->set_data( $value );
-
+	
+	return true;
 }
 
 /**

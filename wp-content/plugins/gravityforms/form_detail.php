@@ -131,7 +131,7 @@ class GFFormDetail {
 			$form['fields'] = array();
 		}
 
-		$form = gf_apply_filters( 'gform_admin_pre_render', $form_id, $form );
+		$form = gf_apply_filters( array( 'gform_admin_pre_render', $form_id ), $form );
 
 		if ( isset( $form['id'] ) ) {
 			echo "<script type=\"text/javascript\">var form = " . json_encode( $form ) . ';</script>';
@@ -503,6 +503,14 @@ class GFFormDetail {
 		<div id="gform_tab_1">
 		<ul>
 		<?php
+        /**
+         * Inserts additional content within the General field settings
+         *
+         * Note: This action fires multiple times.  Use the first parameter to determine positioning on the list.
+         *
+         * @param int 0        The placement of the action being fired
+         * @param int $form_id The current form ID
+         */
 		do_action( 'gform_field_standard_settings', 0, $form_id );
 		?>
 		<li class="label_setting field_setting">
@@ -904,7 +912,7 @@ class GFFormDetail {
 			</label>
 			<?php
 			$args = array( 'name' => 'field_post_author' );
-			$args = gf_apply_filters( 'gform_author_dropdown_args', rgar( $form, 'id' ), $args );
+			$args = gf_apply_filters( array( 'gform_author_dropdown_args', rgar( $form, 'id' ) ), $args );
 			wp_dropdown_users( $args );
 			?>
 			<div>
@@ -1406,7 +1414,7 @@ class GFFormDetail {
 			</div>
 
 			<?php $window_title = __( 'Bulk Add / Predefined Choices', 'gravityforms' ); ?>
-			<input type='button' value='<?php echo esc_attr( $window_title ) ?>' onclick="tb_show('<?php echo esc_js( $window_title ) ?>', '#TB_inline?height=500&amp;width=600&amp;inlineId=gfield_bulk_add', '');" class="button" />
+			<input type='button' value='<?php echo esc_attr( $window_title ) ?>' onclick="tb_show('<?php echo esc_js( $window_title ) ?>', '#TB_inline?height=400&amp;width=600&amp;inlineId=gfield_bulk_add', '');" class="button" />
 
 			<div id="gfield_bulk_add" style="display:none;">
 				<div>
@@ -1437,7 +1445,7 @@ class GFFormDetail {
 						__( 'Size', 'gravityforms' )                        => array( __( 'Extra Small', 'gravityforms' ), __( 'Small', 'gravityforms' ), __( 'Medium', 'gravityforms' ), __( 'Large', 'gravityforms' ), __( 'Extra Large', 'gravityforms' ) ),
 
 					);
-					$predefined_choices = gf_apply_filters( 'gform_predefined_choices', rgar( $form, 'id' ), $predefined_choices );
+					$predefined_choices = gf_apply_filters( array( 'gform_predefined_choices', rgar( $form, 'id' ) ), $predefined_choices );
 
 					$custom_choices = RGFormsModel::get_custom_choices();
 
@@ -1834,6 +1842,15 @@ class GFFormDetail {
 		<div id="gform_tab_3">
             <ul>
 				<?php
+
+                /**
+                 * Inserts additional content within the Appearance field settings
+                 *
+                 * Note: This action fires multiple times.  Use the first parameter to determine positioning on the list.
+                 *
+                 * @param int 0        The placement of the action being fired
+                 * @param int $form_id The current form ID
+                 */
 				do_action( 'gform_field_appearance_settings', 0, $form_id );
 				?>
                 <li class="placeholder_setting field_setting">
@@ -1994,6 +2011,14 @@ class GFFormDetail {
         <div id="gform_tab_2">
 		<ul>
 		<?php
+        /**
+         * Inserts additional content within the Advanced field settings
+         *
+         * Note: This action fires multiple times.  Use the first parameter to determine positioning on the list.
+         *
+         * @param int 0        The placement of the action being fired
+         * @param int $form_id The current form ID
+         */
 		do_action( 'gform_field_advanced_settings', 0, $form_id );
 		?>
 		<li class="admin_label_setting field_setting">
@@ -2611,7 +2636,7 @@ class GFFormDetail {
 
 		require_once( GFCommon::get_base_path() . '/form_display.php' );
 
-		$form_id = absint( $_GET['id'] );
+		$form_id = absint( rgpost( 'form_id' ) );
 		$form    = GFFormsModel::get_form_meta( $form_id );
 
 		$field_html      = GFFormDisplay::get_field( $field, '', true, $form );
@@ -2628,7 +2653,7 @@ class GFFormDetail {
 		$field_json       = stripslashes_deep( $_POST['field'] );
 		$field_properties = GFCommon::json_decode( $field_json, true );
 		$field            = GF_Fields::create( $field_properties );
-		$form_id          = $_GET['id'];
+		$form_id          = absint( rgpost( 'form_id' ) );
 		$form             = GFFormsModel::get_form_meta( $form_id );
 
 		require_once( GFCommon::get_base_path() . '/form_display.php' );
@@ -2656,7 +2681,7 @@ class GFFormDetail {
 		$field            = GF_Fields::create( $field_properties );
 		$id               = absint( $field->id );
 		$type             = $field->inputType;
-		$form_id          = absint( $_GET['id'] );
+		$form_id          = absint( rgpost( 'form_id' ) );
 		$form             = GFFormsModel::get_form_meta( $form_id );
 
 		require_once( GFCommon::get_base_path() . '/form_display.php' );
@@ -2698,7 +2723,7 @@ class GFFormDetail {
 	/**
 	 * Saves form meta. Note the special requirements for the meta string.
 	 *
-	 * @param        $id
+	 * @param int    $id
 	 * @param string $form_json A valid JSON string. The JSON is manipulated before decoding and is designed to work together with jQuery.toJSON() rather than json_encode. Avoid using json_encode as it will convert unicode characters into their respective entities with slashes. These slashes get stripped so unicode characters won't survive intact.
 	 *
 	 * @return array
@@ -2746,6 +2771,14 @@ class GFFormDetail {
 
 			$form_meta = RGFormsModel::get_form_meta( $id );
 
+            /**
+             * Fires after a form is saved
+             *
+             * Used to run additional actions after the form is saved
+             *
+             * @param array $form_meta The form meta
+             * @param bool  false      Returns false if the form ID already exists.
+             */
 			do_action( 'gform_after_save_form', $form_meta, false );
 
 			return array( 'status' => $id, 'meta' => $form_meta );
@@ -2796,6 +2829,14 @@ class GFFormDetail {
 
 			$form_meta = RGFormsModel::get_form_meta( $id );
 
+            /**
+             * Fires after a form is saved
+             *
+             * Used to run additional actions after the form is saved
+             *
+             * @param array $form_meta The form meta
+             * @param bool  true       Returns true if this is a new form.
+             */
 			do_action( 'gform_after_save_form', $form_meta, true );
 
 			return array( 'status' => $id * - 1, 'meta' => $form_meta );
