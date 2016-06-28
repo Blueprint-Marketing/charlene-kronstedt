@@ -1,6 +1,6 @@
 /************************************************
  * REVOLUTION 5.2 EXTENSION - LAYER ANIMATION
- * @version: 2.2.0 (10.03.2016)
+ * @version: 2.6 (30.05.2016)
  * @requires jquery.themepunch.revolution.js
  * @author ThemePunch
 ************************************************/
@@ -145,6 +145,13 @@ jQuery.extend(true,_R, {
 			_nc.data('_pw',_pw);
 			_nc.data('_lw',_lw);
 			_nc.data('_mw',_mw);
+		}
+
+		if (!_nc.data('togglelisteners') && _nc.find('.rs-toggled-content')) {
+			_nc.on('click',function() {
+				_nc.toggleClass('rs-toggle-content-active');
+			});
+			_nc.data('togglelisteners',true);
 		}
 
 		if (opt.sliderLayout=="fullscreen") 
@@ -364,6 +371,7 @@ jQuery.extend(true,_R, {
 		}	// END OF POSITION AND STYLE READ OUTS OF VIDEO
 
 		
+
 		var slidelink = _nc.data('slidelink') || false;
 		
 		// ALL WRAPPED REKURSIVE ELEMENTS SHOULD BE RESPONSIVE HANDLED
@@ -379,6 +387,8 @@ jQuery.extend(true,_R, {
 
 		// RESPONIVE HANDLING OF CURRENT LAYER
 		calcCaptionResponsive(_nc,opt,0,_responsive);
+
+		
 		
 		// _nc FRONTCORNER CHANGES
 		var ncch = _nc.outerHeight(),
@@ -453,6 +463,7 @@ jQuery.extend(true,_R, {
 		// MDELAY AND MSPEED
 												
 		
+
 		var $lts = _nc.data('lasttriggerstate'),
 			$cts = _nc.data('triggerstate'),
 			$start = _nc.data('start') != undefined ? _nc.data('start') : 100,		
@@ -524,7 +535,7 @@ jQuery.extend(true,_R, {
 		// CHECK FOR SVG
 		var $svg = {};
 		$svg.svg = _nc.data('svg_src')!=undefined ? _nc.find('svg') : false;
-
+		
 		
 		// GO FOR ANIMATION
 		if ($progress<1 && _nc.data('outstarted') != 1 || staticdirection==2 || triggerforce) {			
@@ -600,12 +611,15 @@ jQuery.extend(true,_R, {
 
 						 	if (nc.data('newhoveranim')===undefined || 	nc.data('newhoveranim')==="none")	{						 		
 						 		nc.data('newhoveranim',punchgs.TweenLite.to(nc,t.speed,t.anim));
+						 		if (t.anim && t.anim.zIndex)
+						 			nc.data('newhoverparanim',punchgs.TweenLite.to(nc.data('_pw'),t.speed,{zIndex:t.anim.zIndex}));
 						 		if ($svg.svg)  
 						 			nc.data('newsvghoveranim',punchgs.TweenLite.to($svg.svg,t.speed,nc.data('hoversvg').anim));						 	
 
 						 	} else {						 		
-						 		nc.data('newhoveranim').progress(0);
-						 		nc.data('newhoveranim').play();
+						 		nc.data('newhoveranim').progress(0).play();									 		
+						 		if ((t.anim && t.anim.zIndex) || (t.anim.css && t.anim.css.zIndex)) 						 			
+						 			nc.data('newhoverparanim').progress(0).play();						 			
 						 		if ($svg.svg) nc.data('newsvghoveranim').progress(0).play();
 						 	}
 						 }
@@ -616,6 +630,8 @@ jQuery.extend(true,_R, {
 
 					 	if (intl && intl.progress()==1 && nc.data('newhoveranim')!=undefined) {							 						 		
 					 		nc.data('newhoveranim').reverse();
+					 		if (nc.data('newhoverparanim'))
+					 			nc.data('newhoverparanim').reverse();
 					 		if ($svg.svg) nc.data('newsvghoveranim').reverse();
 					 	}
 					 });
@@ -1050,6 +1066,7 @@ var getAnimDatas = function(frm,data,reversed) {
 				if (w=="scaleX" || w=="sX") o.anim.scaleX = animDataTranslator(v,o.anim.scaleX);
 				if (w=="scaleY" || w=="sY") o.anim.scaleY = animDataTranslator(v,o.anim.scaleY);
 				if (w=="opacity" || w=="o") o.anim.opacity = animDataTranslator(v,o.anim.opacity);
+				o.anim.opacity = o.anim.opacity == 0 ? 0.0001 : o.anim.opacity;
 				if (w=="skewX" || w=="skX") o.anim.skewX = animDataTranslator(v,o.anim.skewX);
 				if (w=="skewY" || w=="skY") o.anim.skewY = animDataTranslator(v,o.anim.skewY);
 				if (w=="x") o.anim.x = animDataTranslator(v,o.anim.x);
@@ -1213,14 +1230,14 @@ var convertHoverStyle = function(t,s) {
 	s = s.replace("br:","borderRadius:");
 	s = s.replace("bs:","border-style:");
 	s = s.replace("td:","text-decoration:");
+	s = s.replace("zi:","zIndex:");
 	var sp = s.split(";");
 	if (sp)
 		jQuery.each(sp,function(key,cont){
 			var attr = cont.split(":");
 			if (attr[0].length>0)
 				t.anim[attr[0]] = attr[1];		
-		})			
-
+		})				
 	return t;
 
 }
@@ -1244,7 +1261,7 @@ var getcssParams = function(nc,level) {
 	obj.fontSize = gp ? pc.data('fontsize')===undefined ?  parseInt(pc.css('fontSize'),0) || 0 : pc.data('fontsize')  :  nc.data('fontsize')===undefined ?  parseInt(nc.css('fontSize'),0) || 0 : nc.data('fontsize'); 
 	obj.fontWeight = gp ? pc.data('fontweight')===undefined ?  parseInt(pc.css('fontWeight'),0) || 0 : pc.data('fontweight')  :  nc.data('fontweight')===undefined ?  parseInt(nc.css('fontWeight'),0) || 0 : nc.data('fontweight'); 
 	obj.whiteSpace = gp ? pc.data('whitespace')===undefined ?  pc.css('whitespace') || "normal" : pc.data('whitespace')  :  nc.data('whitespace')===undefined ?  nc.css('whitespace') || "normal" : nc.data('whitespace'); 
-	
+	obj.zIndex = gp ? pc.data('zIndex')===undefined ?  pc.css('zIndex') || "inherit" : pc.data('zIndex')  :  nc.data('zIndex')===undefined ?  nc.css('zIndex') || "inherit" : nc.data('zIndex'); 
 	
 	if (jQuery.inArray(nc.data('layertype'),["video","image","audio"])===-1 && !nc.is("img"))
 		obj.lineHeight = gp ? pc.data('lineheight')===undefined ? parseInt(pc.css('lineHeight'),0) || 0 : pc.data('lineheight')  :  nc.data('lineheight')===undefined ? parseInt(nc.css('lineHeight'),0) || 0 : nc.data('lineheight');
@@ -1295,7 +1312,7 @@ var getcssParams = function(nc,level) {
 	}
 	
 	
-
+		
 	obj.styleProps = nc.css(["background-color",							 
 							 "border-top-color",
 							 "border-bottom-color",
@@ -1315,8 +1332,9 @@ var getcssParams = function(nc,level) {
 							 "borderTopLeftRadius",
 							 "borderTopRightRadius",
 							 "borderBottomLeftRadius",
-							 "borderBottomRightRadius"							 
+							 "borderBottomRightRadius"							
 							 ]);		 
+	
 	return obj;
 }
 
@@ -1425,10 +1443,9 @@ var calcCaptionResponsive = function(nc,opt,level,responsive) {
 				punchgs.TweenLite.set(nc,{color:obj.color,overwrite:"auto"});
 			
 			if (nc.data('svg_src')!=undefined) {
-				if (obj.color!="nopredefinedcolor") 
-					punchgs.TweenLite.set(nc.find('svg'),{fill:obj.color,overwrite:"auto"});
-				else
-					punchgs.TweenLite.set(nc.find('svg'),{fill:obj.styleProps.color,overwrite:"auto"});
+				var scolto = obj.color!="nopredefinedcolor" && obj.color!=undefined ? obj.color : obj.css!=undefined && obj.css.color!="nopredefinedcolor" && obj.css.color!=undefined ? obj.css.color : obj.styleProps.color!=undefined ? obj.styleProps.color : obj.styleProps.css!=undefined && obj.styleProps.css.color!=undefined ? obj.styleProps.css.color : false; 
+				if (scolto!=false)	
+					punchgs.TweenLite.set(nc.find('svg'),{fill:scolto,overwrite:"auto"});				
 			}
 			
 		}
@@ -1549,6 +1566,7 @@ var callCaptionLoops = function(el,factor) {
 					oo.y = "50%";
 				}
 
+				
 				angle = angle*factor;
 				radius = radius * factor;
 
@@ -1564,8 +1582,8 @@ var callCaptionLoops = function(el,factor) {
 												ease:punchgs.Linear.easeNone,
 												onUpdate:function() {
 
-													var rad = angobj.a * (Math.PI / 180);
-										            punchgs.TweenLite.to(angobj.element,0.1,{force3D:"auto",x:angobj.xoffset+Math.cos(rad) * angobj.unit, y:angobj.yoffset+angobj.unit * (1 - Math.sin(rad))});
+													var rad = (angobj.a+angobj.ang) * (Math.PI / 180);
+										            punchgs.TweenLite.to(angobj.element,0.1,{force3D:"auto",x:angobj.xoffset+Math.cos(rad) * angobj.unit, y:(angobj.unit * (1 - Math.sin(rad)))+angobj.yoffset/0.5});
 
 												},
 												onComplete:function() {

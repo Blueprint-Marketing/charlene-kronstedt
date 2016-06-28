@@ -1,6 +1,6 @@
 /**************************************************************************
  * jquery.themepunch.revolution.js - jQuery Plugin for Revolution Slider
- * @version: 5.2.3 (16.03.2016)
+ * @version: 5.2.5.3 (30.05.2016)
  * @requires jQuery v1.7 or later (tested on 1.9)
  * @author ThemePunch
 **************************************************************************/
@@ -53,7 +53,10 @@
 					panZoomDisableOnMobile:"off",
 					simplifyAll:"on",
 					nextSlideOnWindowFocus:"off",	
-					disableFocusListener:true						
+					disableFocusListener:true,
+					ignoreHeightChanges:"off",  // off, mobile, always
+					ignoreHeightChangesSize:0
+
 				},
 				
 				parallax : {
@@ -92,7 +95,7 @@
 				},
 
 				navigation : {
-					keyboardNavigation:"on",	
+					keyboardNavigation:"off",	
 					keyboard_direction:"horizontal",		//	horizontal - left/right arrows,  vertical - top/bottom arrows
 					mouseScrollNavigation:"off",			// on, off, carousel					
 					onHoverStop:"on",						// Stop Banner Timet at Hover on Slide on/off
@@ -219,6 +222,10 @@
 
 				
 				var c = jQuery(this);
+				
+				// Prepare maxHeight
+				options.minHeight = options.minHeight!=undefined ? parseInt(options.minHeight,0) : options.minHeight;
+
 				//REMOVE SLIDES IF SLIDER IS HERO
 				if (options.sliderType=="hero") {
 					c.find('>ul>li').each(function(i) {
@@ -284,7 +291,8 @@
 							opt.thumbs = removeArray(opt.thumbs,sindex);	
 							if (_R.updateNavIndexes) _R.updateNavIndexes(opt); 
 							if (nextslideafter) container.revnext();
-								
+							punchgs.TweenLite.set(opt.li,{minWidth:"99%"});														
+							punchgs.TweenLite.set(opt.li,{minWidth:"100%"});
 						}
 					}
 				}
@@ -694,7 +702,7 @@ jQuery.extend(true, _R, {
 		container.trigger("revolution.nextslide.waiting");
 				
 
-		if (nindex !== aindex && nindex!=-1)
+		if ((aindex===nindex && aindex === opt.last_shown_slide) || (nindex !== aindex && nindex!=-1))
 			swapSlide(container,opt);	
 		else
 			container.find('.next-revslide').removeClass("next-revslide");
@@ -812,7 +820,8 @@ jQuery.extend(true, _R, {
 		if (opt.playingvideos != undefined && opt.playingvideos.length>0) { 
 			opt.lastplayedvideos = jQuery.extend(true,[],opt.playingvideos);
 			if (opt.playingvideos)
-				jQuery.each(opt.playingvideos,function(i,_nc) {				
+				jQuery.each(opt.playingvideos,function(i,_nc) {		
+					opt.leaveViewPortBasedStop = true;		
 					if (_R.stopVideo) _R.stopVideo(_nc,opt);
 				});
 		}
@@ -934,14 +943,15 @@ var getNeededScripts = function(o,c) {
 		// LAYERANIM, VIDEOS, ACTIONS EXTENSIONS
 		c.find('.tp-caption, .tp-static-layer, .rs-background-video-layer').each(function(){
 			var _nc = jQuery(this);
-			if ((_nc.data('ytid')!=undefined  || _nc.find('iframe').length>0 && _nc.find('iframe').attr('src').toLowerCase().indexOf('youtube')>0))
-				n.videos = true;
+			if ((_nc.data('ytid')!=undefined  || _nc.find('iframe').length>0 && _nc.find('iframe').attr('src').toLowerCase().indexOf('youtube')>0))			
+				n.videos = true;			
 			if ((_nc.data('vimeoid')!=undefined || _nc.find('iframe').length>0 && _nc.find('iframe').attr('src').toLowerCase().indexOf('vimeo')>0))
 				n.videos = true;		
 			if (_nc.data('actions')!==undefined) 
 				n.actions = true;
 			n.layeranim = true;
 		});
+
 
 		c.find('li').each(function() {
 			if (jQuery(this).data('link') && jQuery(this).data('link')!=undefined) {
@@ -951,8 +961,9 @@ var getNeededScripts = function(o,c) {
 		})
 
 		// VIDEO EXTENSION
-		if (!n.videos && (c.find('.rs-background-video-layer').length>0 || c.find(".tp-videolayer").length>0 || c.find(".tp-audiolayer") || c.find('iframe').length>0 || c.find('video').length>0))
+		if (!n.videos && (c.find('.rs-background-video-layer').length>0 || c.find(".tp-videolayer").length>0 || c.find(".tp-audiolayer").length>0 || c.find('iframe').length>0 || c.find('video').length>0))						
 			n.videos = true;
+		
 
 		// VIDEO EXTENSION
 		if (o.sliderType =="carousel")
@@ -1172,6 +1183,15 @@ var initSlider = function (container,opt) {
 
  }
 
+ var onFullScreenChange = function() {
+			 jQuery("body").data('rs-fullScreenMode',!jQuery("body").data('rs-fullScreenMode'));
+		     if (jQuery("body").data('rs-fullScreenMode')) {
+			     setTimeout(function() {
+			     	jQuery(window).trigger("resize");
+			     },200);
+		     }
+		}
+
  var runSlider = function(container,opt) {
 
 
@@ -1321,11 +1341,12 @@ var initSlider = function (container,opt) {
 		if (opt.sliderLayout!=="fullscreen" || opt.fullScreenAutoWidth!="on") {			
 			var cp = container.parent(),				
 				mb = cp.css('marginBottom'),
-				mt = cp.css('marginTop');
+				mt = cp.css('marginTop'),
+				cid = container.attr('id')+"_forcefullwidth";
 			mb = mb===undefined ? 0 : mb;
 			mt = mt===undefined ? 0 : mt;
 
-			cp.wrap('<div class="forcefullwidth_wrapper_tp_banner" style="position:relative;width:100%;height:auto;margin-top:'+mt+';margin-bottom:'+mb+'"></div>');
+			cp.wrap('<div class="forcefullwidth_wrapper_tp_banner" id="'+cid+'" style="position:relative;width:100%;height:auto;margin-top:'+mt+';margin-bottom:'+mb+'"></div>');
 			container.closest('.forcefullwidth_wrapper_tp_banner').append('<div class="tp-fullwidth-forcer" style="width:100%;height:'+container.height()+'px"></div>');
 			container.parent().css({marginTop:"0px",marginBottom:"0px"});
 			//container.css({'backgroundColor':container.parent().css('backgroundColor'),'backgroundImage':container.parent().css('backgroundImage')});
@@ -1463,22 +1484,21 @@ var initSlider = function (container,opt) {
 				
 				
 		});
+		
+		container[0].addEventListener('mouseenter',function() {				
+			container.trigger('tp-mouseenter');										
+			opt.overcontainer=true;
+		},{passive:true});
 
-		container.hover(
-			function() {				
-					container.trigger('tp-mouseenter');		
-					opt.overcontainer=true;			
-			},
-			function() {
-					container.trigger('tp-mouseleft');												
-					opt.overcontainer=false;
-			});
-
-
-		container.on('mouseover',function() {
+		container[0].addEventListener('mouseover',function() {												
 			container.trigger('tp-mouseover');
 			opt.overcontainer=true;
-		})
+		},{passive:true});
+
+		container[0].addEventListener('mouseleave',function() {				
+			container.trigger('tp-mouseleft');												
+			opt.overcontainer=false;
+		},{passive:true});
 
 		// REMOVE ANY VIDEO JS SETTINGS OF THE VIDEO  IF NEEDED  (OLD FALL BACK, AND HELP FOR 3THD PARTY PLUGIN CONFLICTS)
 		container.find('.tp-caption video').each(function(i) {
@@ -1493,7 +1513,7 @@ var initSlider = function (container,opt) {
 		
 		
 		// PRELOAD STATIC LAYERS			
-		loadImages(container.find('.tp-static-layers'),opt,0);
+		loadImages(container.find('.tp-static-layers'),opt,0,true);
 
 		waitForCurrentImages(container.find('.tp-static-layers'),opt,function() {
 			container.find('.tp-static-layers img').each(function() {								
@@ -1552,7 +1572,7 @@ var initSlider = function (container,opt) {
 		// PREPARE THE SLIDES
 		opt.ul.css({'display':'block'});
 		prepareSlides(container,opt);
-		if (opt.parallax.type!=="off") _R.checkForParallax(container,opt);
+		if (opt.parallax.type!=="off" && _R.checkForParallax) _R.checkForParallax(container,opt);
 
 		
 		// PREPARE SLIDER SIZE			
@@ -1560,8 +1580,8 @@ var initSlider = function (container,opt) {
 		
 
 		// Call the Navigation Builder
-		if (opt.sliderType!=="hero") _R.createNavigation(container,opt);
-		if (_R.resizeThumbsTabs) _R.resizeThumbsTabs(opt);
+		if (opt.sliderType!=="hero" && _R.createNavigation) _R.createNavigation(container,opt);
+		if (_R.resizeThumbsTabs && _R.resizeThumbsTabs) _R.resizeThumbsTabs(opt);
 		contWidthManager(opt);
 		var _v = opt.viewPort;
 		opt.inviewport = false;
@@ -1578,7 +1598,7 @@ var initSlider = function (container,opt) {
 
 		// START THE SLIDER
 		setTimeout(function() {
-			if ( opt.sliderType =="carousel") _R.prepareCarousel(opt);	
+			if ( opt.sliderType =="carousel" && _R.prepareCarousel) _R.prepareCarousel(opt);	
 			
 			if (!_v.enable || (_v.enable && opt.inviewport) || (_v.enable &&  !opt.inviewport && !_v.outof=="wait")) {
 				swapSlide(container,opt);	
@@ -1609,25 +1629,38 @@ var initSlider = function (container,opt) {
 		********************************/
 		// FULLSCREEN MODE TESTING
 		jQuery("body").data('rs-fullScreenMode',false);
-		jQuery(window).on ('mozfullscreenchange webkitfullscreenchange fullscreenchange',function(){
-		     jQuery("body").data('rs-fullScreenMode',!jQuery("body").data('rs-fullScreenMode'));
-		     if (jQuery("body").data('rs-fullScreenMode')) {
-			     setTimeout(function() {
-			     	jQuery(window).trigger("resize");
-			     },200);
-		     }
-		});
+
+		
+		window.addEventListener('fullscreenchange',onFullScreenChange,{passive:true});
+		window.addEventListener('mozfullscreenchange',onFullScreenChange,{passive:true});
+		window.addEventListener('webkitfullscreenchange',onFullScreenChange,{passive:true});
+
+		
 
 		var resizid = "resize.revslider-"+container.attr('id');
 
 		// IF RESIZED, NEED TO STOP ACTUAL TRANSITION AND RESIZE ACTUAL IMAGES
 		jQuery(window).on(resizid,function() {
+			console.log("happening")
 			if (container==undefined) return false;
 			
 			if (jQuery('body').find(container)!=0) 				
 				contWidthManager(opt);							
 				
-				if (container.outerWidth(true)!=opt.width || container.is(":hidden") || (opt.sliderLayout=="fullscreen" && jQuery(window).height()!=opt.lastwindowheight)) {
+				var hchange = false;
+
+				if (opt.sliderLayout=="fullscreen") {
+					var jwh = jQuery(window).height();
+					if ((opt.fallbacks.ignoreHeightChanges=="mobile" && _ISM) || opt.fallbacks.ignoreHeightChanges=="always") {
+						opt.fallbacks.ignoreHeightChangesSize = opt.fallbacks.ignoreHeightChangesSize == undefined ? 0 : opt.fallbacks.ignoreHeightChangesSize;
+						hchange = (jwh!=opt.lastwindowheight) && (Math.abs(jwh-opt.lastwindowheight) > opt.fallbacks.ignoreHeightChangesSize)							
+					} else {
+						hchange = (jwh!=opt.lastwindowheight) 
+					}
+				}
+				
+	
+				if (container.outerWidth(true)!=opt.width || container.is(":hidden") || (hchange)) {
 						opt.lastwindowheight = jQuery(window).height();
 						containerResized(container,opt);
 				}
@@ -2024,10 +2057,12 @@ var progressImageLoad = function(opt) {
 						var img = new Image();
 						
 						img.onload = function() {											
-						 	imgLoaded(this,opt,"loaded");					
+						 	imgLoaded(this,opt,"loaded");
+						 	queue.error = false;				
 						};
 						img.onerror = function() {
 							imgLoaded(this,opt,"failed");					
+							queue.error = true;
 						};		
 						
 						img.src=queue.src;
@@ -2052,7 +2087,7 @@ var progressImageLoad = function(opt) {
 
 
 // ADD TO QUEUE THE NOT LOADED IMAGES YES
-var addToLoadQueue = function(src,opt,prio,type) {		
+var addToLoadQueue = function(src,opt,prio,type,staticlayer) {		
 	var alreadyexist = false;	
 	if (opt.loadqueue)	
 		jQuery.each(opt.loadqueue, function(index,queue) {			
@@ -2063,16 +2098,18 @@ var addToLoadQueue = function(src,opt,prio,type) {
 	if (!alreadyexist) {		
 			var loadobj = new Object();			
 			loadobj.src = src;
+			loadobj.starttoload = jQuery.now();
 			loadobj.type = type || "img";
 			loadobj.prio = prio;
 			loadobj.progress = "prepared";
+			loadobj.static = staticlayer;
 			opt.loadqueue.push(loadobj);		
 	}				
 
 }
 
 // LOAD THE IMAGES OF THE PREDEFINED CONTAINER
-var loadImages = function(container,opt,prio) {	
+var loadImages = function(container,opt,prio,staticlayer) {	
 	
 	container.find('img,.defaultimg, .tp-svg-layer').each(function() {
 		var element = jQuery(this),
@@ -2080,7 +2117,7 @@ var loadImages = function(container,opt,prio) {
 			type = element.data('svg_src') !=undefined ? "svg" : "img";
 		
 		element.data('start-to-load',jQuery.now());
-		addToLoadQueue(src,opt,prio,type);
+		addToLoadQueue(src,opt,prio,type,staticlayer);
 	});
 	progressImageLoad(opt);
 }
@@ -2155,10 +2192,15 @@ var waitForCurrentImages = function(nextli,opt,callback) {
 
 
 		if (loadobj && loadobj.progress && loadobj.progress.match(/inprogress|inload|prepared/g)) 
-			if (jQuery.now()-element.data('start-to-load')<5000) 
+			if (!loadobj.error && jQuery.now()-element.data('start-to-load')<5000) 
 					waitforload = true;			
-			else
-				console.error(src+"  Could not be loaded !");
+			else {
+				loadobj.progress="failed";
+				if (!loadobj.reported_img) {
+					loadobj.reported_img = true;
+					console.warn(src+"  Could not be loaded !");
+				}
+			}
 		
 		// WAIT FOR VIDEO API'S					
 		if (opt.youtubeapineeded == true && (!window['YT'] || YT.Player==undefined)) {		
@@ -2193,13 +2235,34 @@ var waitForCurrentImages = function(nextli,opt,callback) {
 		});		
 	}
 	
-
+	jQuery.each(opt.loadqueue,function(i,o) {				
+		if (o.static===true && (o.progress!="loaded" || o.progress==="failed")) {
+			if (o.progress=="failed") {
+				if (!o.reported) {
+					o.reported = true;
+					console.warn("Static Image "+o.src+"  Could not be loaded in time. Error Exists:"+o.error);
+				}
+			}
+			else
+			if (!o.error && jQuery.now()-o.starttoload<5000) {
+				waitforload = true;			
+			}
+			else {
+				if (!o.reported) {
+					o.reported = true;
+					console.warn("Static Image "+o.src+"  Could not be loaded within 5s! Error Exists:"+o.error);
+				}
+			}
+			
+		}
+	});
+		
 	if (waitforload) 
 		setTimeout(function() {
 				waitForCurrentImages(nextli,opt,callback) ;
 			},19);
 	else 		
-		callback();
+		setTimeout(callback,19);
 	
 }
 
@@ -2568,7 +2631,7 @@ var letItFree = function(container,opt,nextsh,actsh,nextli,actli,mtl) {
 
 	var lastSlideLoop = actli.data('slide_on_focus_amount'),
 		lastSlideMaxLoop = actli.data('hideafterloop');	
-	if (lastSlideMaxLoop!=0 && lastSlideMaxLoop<=lastSlideLoop) {
+	if (lastSlideMaxLoop!=0 && lastSlideMaxLoop<=lastSlideLoop) {		
 		opt.c.revremoveslide(actli.index());
 	}
 	//if (_R.callStaticDDDParallax) _R.callStaticDDDParallax(container,opt,nextli);		
@@ -2741,7 +2804,7 @@ var vis = (function(){
 	        }
 	    }
 	    return function(c) {
-	        if (c) document.addEventListener(eventKey, c);
+	        if (c) document.addEventListener(eventKey, c,{pasive:true});
 	        return !document[stateKey];
 	    }
 	})();
@@ -2793,11 +2856,11 @@ var tabBlurringCheck = function(container,opt) {
 	        // bind focus event
 	        window.addEventListener("focus", function (event) {
 				restartOnFocus(opt);
-	        }, false);
+	        }, {capture:false,passive:true});
 	        // bind blur event
 	        window.addEventListener("blur", function (event) {
 				lastStatBlur(opt);	  
-	        }, false);
+	        }, {capture:false,passive:true});
 
 	    } else {
 	        // bind focus event
